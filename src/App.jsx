@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import { Movies } from "./components/Movies";
-import responseMovies from "./mocks/with-results.json";
+import { useMovies } from "./hooks/useMovies";
 
 function useSearch() {
   const [search, updateSearch] = useState("");
@@ -30,14 +30,17 @@ function useSearch() {
 }
 
 function App() {
+  const [sort, setSort] = useState(false);
   const { search, updateSearch, error } = useSearch();
-  const [movies, setMovies] = useState([]);
-
-  
+  const { movies, getMovies, loading } = useMovies({ search, sort });
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log("Buscando", search);
+    getMovies({ search });
+  };
+
+  const handleSort = () => {
+    setSort(!sort);
   };
 
   const handleChange = (event) => {
@@ -46,25 +49,23 @@ function App() {
   };
 
   return (
-    <div>
-      <header className="page">
-        <h1>Buscador de peliculas</h1>
-        <form onSubmit={handleSubmit}>
+    <div className="page">
+      <header>
+        <h1>Buscador de películas</h1>
+        <form className="form" onSubmit={handleSubmit}>
           <input
-            onChange={handleChange}
             name="query"
+            onChange={handleChange}
             value={search}
-            type="text"
-            placeholder="Busca una pelicula"
+            placeholder="Avengers, matrix..."
           />
-          <button type="submit">Buscar</button>
+          <input type="checkbox" onChange={handleSort} checked={sort} />
+          <button>Buscar</button>
         </form>
         {error && <p style={{ color: "red" }}>{error}</p>}
       </header>
 
-      <main>
-        <Movies movies={mappedMovies} />
-      </main>
+      <main>{loading ? <p>Loading...</p> : <Movies movies={movies} />}</main>
     </div>
   );
 }
